@@ -25,18 +25,85 @@ This demonstrates the cconnection of MySQL database and Node.js to create a simp
    const express = require('express')
    const app = express()
 
+require('dotenv').config();
+const express = require('express');
+const mysql = require('mysql2');
+
+const app = express();
+
+// Database connection
+const db = mysql.createConnection({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USERNAME,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+});
+
+// Test database connection
+db.connect((err) => {
+  if (err) {
+    console.error('Database connection failed:', err);
+    return;
+  }
+  console.log('Connected to the MySQL database.');
+});
+
+// Middleware to parse JSON
+app.use(express.json());
+
+/** Question 1: Retrieve all patients */
+app.get('/patients', (req, res) => {
+  const query = 'SELECT patient_id, first_name, last_name, date_of_birth FROM patients';
+  db.query(query, (err, results) => {
+    if (err) {
+      return res.status(500).json({ error: 'Failed to retrieve patients' });
+    }
+    res.json(results);
+  });
+});
+
+/** Question 2: Retrieve all providers */
+app.get('/providers', (req, res) => {
+  const query = 'SELECT first_name, last_name, provider_specialty FROM providers';
+  db.query(query, (err, results) => {
+    if (err) {
+      return res.status(500).json({ error: 'Failed to retrieve providers' });
+    }
+    res.json(results);
+  });
+});
+
+/** Question 3: Filter patients by First Name */
+app.get('/patients/:first_name', (req, res) => {
+  const { first_name } = req.params;
+  const query = 'SELECT patient_id, first_name, last_name, date_of_birth FROM patients WHERE first_name = ?';
+  db.query(query, [first_name], (err, results) => {
+    if (err) {
+      return res.status(500).json({ error: 'Failed to retrieve patients by first name' });
+    }
+    res.json(results);
+  });
+});
+
+/** Question 4: Retrieve all providers by their specialty */
+app.get('/providers/specialty/:specialty', (req, res) => {
+  const { specialty } = req.params;
+  const query = 'SELECT first_name, last_name, provider_specialty FROM providers WHERE provider_specialty = ?';
+  db.query(query, [specialty], (err, results) => {
+    if (err) {
+      return res.status(500).json({ error: 'Failed to retrieve providers by specialty' });
+    }
+    res.json(results);
+  });
+});
+
+// Start the server
+const PORT = 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
+});
+
    
-   // Question 1 goes here
-
-
-   // Question 2 goes here
-
-
-   // Question 3 goes here
-
-
-   // Question 4 goes here
-
    
 
    // listen to the server
